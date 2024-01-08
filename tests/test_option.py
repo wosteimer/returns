@@ -1,3 +1,6 @@
+import pytest
+
+from returns.errors import InvalidUnwrapError
 from returns.option import *
 from returns.result import Err, Ok
 
@@ -48,3 +51,14 @@ def test_to_result_it_is_expected_to_return_an_ok_type_when_in_the_state_some():
 def test_to_result_it_is_expected_to_return_an_err_type_when_in_the_state_nothing():
     option: Option[int] = Nothing()
     assert isinstance(option.to_result(ValueError()), Err)
+
+
+def test_unwrap_it_is_expected_that_in_the_some_state_the_value_will_be_returned():
+    option: Option[int] = Some(1)
+    assert option.unwrap() == 1
+
+
+def test_unwrap_it_is_expected_that_in_the_nothing_state_an_error_will_be_thrown():
+    option: Option[int] = Nothing()
+    with pytest.raises(InvalidUnwrapError):
+        option.unwrap()
