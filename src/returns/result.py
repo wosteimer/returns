@@ -2,9 +2,9 @@ from collections.abc import Callable
 
 from returns.errors import InvalidUnwrapError
 
-type Result[T, R: Exception] = Ok[T, R] | Err[T, R]
+type Result[T, E: Exception] = Ok[T, E] | Err[T, E]
 
-class Ok[T, R]:
+class Ok[T, E: Exception]:
     __match_args__ = ("value",)
 
     def __init__(self, value: T):
@@ -14,14 +14,14 @@ class Ok[T, R]:
     def value(self) -> T:
         return self.__value
 
-    def map[U, B: Exception](self, fn: Callable[[T], Result[U, B]]) -> Result[U, B]:
+    def map[U, R: Exception](self, fn: Callable[[T], Result[U, R]]) -> Result[U, R]:
         return fn(self.__value)
-
-    def unwrap_err(self) -> R:
-        raise InvalidUnwrapError()
 
     def unwrap(self) -> T:
         return self.value
+    
+    def unwrap_err(self) -> E:
+        raise InvalidUnwrapError()
 
     def is_ok(self) -> bool:
         return True
@@ -30,23 +30,23 @@ class Ok[T, R]:
         return False 
 
 
-class Err[T, R: Exception]:
+class Err[T, E: Exception]:
     __match_args__ = ("value",)
 
-    def __init__(self, value: R):
+    def __init__(self, value: E):
         self.__value = value
 
     @property
-    def value(self) -> R:
+    def value(self) -> E:
         return self.__value
 
-    def map[U, B: Exception](self, _: Callable[[T], Result[U, B]]) -> Result[U, R]:
+    def map[U, R: Exception](self, _: Callable[[T], Result[U, R]]) -> Result[U, E]:
         return Err(self.__value)
 
     def unwrap(self) -> T:
         raise InvalidUnwrapError()
 
-    def unwrap_err(self) -> R:
+    def unwrap_err(self) -> E:
         return self.__value
 
     def is_ok(self) -> bool:
