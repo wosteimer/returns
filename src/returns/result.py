@@ -1,8 +1,12 @@
-from collections.abc import Callable
+from __future__ import annotations
+
+from collections.abc import Awaitable, Callable
 
 from returns.errors import InvalidUnwrapError
 
 type Result[T, E: Exception] = Ok[T, E] | Err[T, E]
+
+
 
 class Ok[T, E: Exception]:
     __match_args__ = ("value",)
@@ -13,6 +17,9 @@ class Ok[T, E: Exception]:
     @property
     def value(self) -> T:
         return self.__value
+
+    async def async_map[U, R:Exception](self, fn: Callable[[T], Awaitable[Result[U, R]]]) -> Result[U, R]:
+        return await fn(self.__value)
 
     def map[U, R: Exception](self, fn: Callable[[T], Result[U, R]]) -> Result[U, R]:
         return fn(self.__value)
@@ -30,7 +37,7 @@ class Ok[T, E: Exception]:
         return False 
 
 
-class Err[T, E: Exception]:
+class Err[T, E:Exception]:
     __match_args__ = ("value",)
 
     def __init__(self, value: E):
@@ -40,7 +47,10 @@ class Err[T, E: Exception]:
     def value(self) -> E:
         return self.__value
 
-    def map[U, R: Exception](self, _: Callable[[T], Result[U, R]]) -> Result[U, E]:
+    async def async_map[U, R:Exception](self, _: Callable[[T], Awaitable[Result[U, R]]]) -> Result[U, E]:
+        return Err(self.__value) 
+
+    def map[U, R: Exception](self, _: Callable[[T], Result[U, R]]) -> Result[U, E]: 
         return Err(self.__value)
 
     def unwrap(self) -> T:
