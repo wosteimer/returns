@@ -17,7 +17,7 @@ class Ok[T, E: Exception]:
     def value(self) -> T:
         return self.__value
 
-    def map[U, R: Exception](self, fn: Callable[[T], Result[U, R]]) -> Result[U, R]:
+    def map[U, R: Exception](self, fn: Callable[[T], Result[U, R]]) -> Result[U, E | R]:
         return fn(self.__value)
 
     def unwrap_err(self) -> E:
@@ -43,7 +43,7 @@ class Err[T, E:Exception]:
     def value(self) -> E:
         return self.__value
 
-    def map[U, R: Exception](self, _: Callable[[T], Result[U, R]]) -> Result[U, E]: 
+    def map[U, R: Exception](self, _: Callable[[T], Result[U, R]]) -> Result[U, E | R]: 
         return Err(self.__value)
 
     def unwrap(self) -> T:
